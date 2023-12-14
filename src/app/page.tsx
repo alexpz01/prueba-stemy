@@ -1,4 +1,4 @@
-'use client'
+"use client";
 import PokemonElement from "@/components/PokemonElement";
 import PokemonList from "@/components/PokemonList";
 import useAPI from "@/hooks/useAPI";
@@ -6,66 +6,39 @@ import Pokemon from "@/models/Pokemon";
 import { useEffect, useState } from "react";
 
 export default function Home() {
-
-  const {getPokemonList} = useAPI()
-  const [pokemonList, setPokemonList] = useState<Pokemon[]>([])
-  const [pokemonListShow, setPokemonListShow] = useState<Pokemon[]>([])
-
+  const { getPokemonList } = useAPI();
+  // Having two states for pokemonList, one filtered and one unfiltered is a bad practice. Whenever you have "derived" states
+  // from another state, it's best to calculate them at the time of use, not to have them duplicated in the state.
+  const [pokemonList, setPokemonList] = useState<Pokemon[]>([]);
+  const [isSorted, setIsSorted] = useState(false);
+  const [search, setSearch] = useState("");
 
   useEffect(() => {
-    getPokemonList().then(function(list) {
-      setPokemonList(list)
-      setPokemonListShow(list)
-    })
-  }, [])
+    getPokemonList().then(function (list) {
+      setPokemonList(list);
+    });
+  }, []);
 
-  const orderAlphabetical = () : void => {
-
-    const sortedList = pokemonList.sort((a, b) => {
-      if (a.getName() < b.getName()) {
-        return -1
-      }
-      if (a.getName() > b.getName()) {
-        return 1
-      }
-      return 0
-    })
-    setPokemonList([...sortedList])
-
-    const sortedListShow = pokemonListShow.sort((a, b) => {
-      if (a.getName() < b.getName()) {
-        return -1
-      }
-      if (a.getName() > b.getName()) {
-        return 1
-      }
-      return 0
-    })
-    setPokemonListShow([...sortedListShow])
-
-  }
-
-  const filterByName = (value : string) : void => {
-
-    const filteredList = pokemonList.filter((pokemon) => {
-      const searchValue = value.toUpperCase()
-      const name = pokemon.getName().toUpperCase()
-      if (name.includes(searchValue)) {
-        return true
-      }
-      return false
-    })
-
-
-    setPokemonListShow([...filteredList])
-
-  }
-
+  const filteredPokemonList = pokemonList
+    .filter((pokemon) =>
+      pokemon.getName().toLowerCase().includes(search.toLowerCase())
+    )
+    .sort((a, b) => {
+      if (isSorted) return a.getName().localeCompare(b.getName());
+      return 0; // Not sorted
+    });
   return (
     <main>
-      <button onClick={() => {orderAlphabetical()}}>Ordenar alfabeticamente</button>
-      <input onChange={(e) => {filterByName(e.target.value)}} type="text" />
-      <PokemonList pokemonList={pokemonListShow}></PokemonList>
+      <button onClick={() => setIsSorted(!isSorted)}>
+        Ordenar alfabeticamente
+      </button>
+      <input
+        onChange={(e) => {
+          setSearch(e.target.value);
+        }}
+        type="text"
+      />
+      <PokemonList pokemonList={filteredPokemonList}></PokemonList>
     </main>
-  )
+  );
 }
