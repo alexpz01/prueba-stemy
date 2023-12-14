@@ -1,29 +1,32 @@
 export default class Pokemon {
-    private name : string = ""
-    private sprite : string = ""
-    private types : string[] = []
+  private name: string = "";
+  private sprite: string = "";
+  private types: string[] = [];
 
-    setName(name : string) : void {
-        this.name = name
-    }
+  // Missing a constructor with all the parameters to not have to
+  // call the setters after creating the object
 
-    setSprite(sprite : string) : void {
-        this.sprite = sprite
-    }
+  setName(name: string): void {
+    this.name = name;
+  }
 
-    setTypes(types : string[]) : void {
-        this.types = types
-    }
+  setSprite(sprite: string): void {
+    this.sprite = sprite;
+  }
 
-    getName() : string {
-        return this.name
-    }
-    
-    getSprite() : string {
-        return this.sprite
-    }
+  setTypes(types: string[]): void {
+    this.types = types;
+  }
 
-    getTypes() : string[] {
-        return this.types
-    }
- }
+  getName(): string {
+    return this.name;
+  }
+
+  getSprite(): string {
+    return this.sprite;
+  }
+
+  getTypes(): string[] {
+    return this.types;
+  }
+}
