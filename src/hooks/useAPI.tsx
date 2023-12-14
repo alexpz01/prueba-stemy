@@ -1,46 +1,56 @@
-import Pokemon from "@/models/Pokemon"
+import Pokemon from "@/models/Pokemon";
 
 export default function useAPI() {
-    const getPokemonList = async (offset: number = 0, limit: number = 20): Promise<Pokemon[]> => {
+  const getPokemonList = async (
+    offset: number = 0,
+    limit: number = 20
+  ): Promise<Pokemon[]> => {
+    var pokemonList: Pokemon[] = [];
 
-        var pokemonList: Pokemon[] = []
+    const result = await fetch(
+      `https://pokeapi.co/api/v2/pokemon/?offset=${offset}&limit=${limit}`
+    )
+      .then((result) => {
+        return result.json();
+      })
+      .catch((e) => {
+        console.log(e);
+      });
 
-        const result = await fetch(`https://pokeapi.co/api/v2/pokemon/?offset=${offset}&limit=${limit}`)
-            .then((result) => {
-                return result.json()
-            }).catch((e) => { console.log(e) })
+    // Never use != in js. Always use !== or just use the truthy or falsy value of the variable
+    if (result) pokemonList = await getPokemonsInfo(result);
 
-        if (result != undefined) {
-            pokemonList = await getPokemonsInfo(result)
-            return pokemonList
-        }
+    return pokemonList;
+  };
 
-        return pokemonList
-    }
+  // Any is not a good type. Try to use the type that the API returns
+  const getPokemonsInfo = async (pokemonAPIResult: any): Promise<Pokemon[]> => {
+    const pokemonsData = pokemonAPIResult.results;
 
-    const getPokemonsInfo = async (pokemonAPIResult: any): Promise<Pokemon[]> => {
+    const pokemonList = await Promise.all(
+      pokemonsData.map(async (pokemonData) => {
+        // Calling an empty constructor and then having to set the values is not a good practice.
+        // Why not just pass the values to the constructor?
+        // Or build if from the API response?
+        const pokemon = new Pokemon();
+        pokemon.setName(pokemonData.name);
+        const pokemonDetails = await fetch(pokemonData.url).then(
+          (pokemonInfo) => {
+            return pokemonInfo.json();
+          }
+        );
+        pokemon.setSprite(pokemonDetails.sprites.front_default);
+        pokemon.setTypes(
+          pokemonDetails.types.map((type: any) => {
+            return type.type.name;
+          })
+        );
+        return pokemon;
+      })
+    );
 
-        const pokemonList: Pokemon[] = []
+    return pokemonList;
+  };
 
-        const results = pokemonAPIResult.results
-
-        for (var i: number = 0; i < results.length; i++) {
-            const pokemonData = results[i]
-            const pokemon = new Pokemon()
-            pokemon.setName(pokemonData.name)
-
-            const pokemonDetails = await fetch(pokemonData.url).then((pokemonInfo) => {
-                return pokemonInfo.json()
-            })
-
-            pokemon.setSprite(pokemonDetails.sprites.front_default)
-            pokemon.setTypes(pokemonDetails.types.map((type: any) => { return type.type.name }))
-
-            pokemonList.push(pokemon)
-        }
-        
-        return pokemonList
-    }
-
-    return { getPokemonList }
+  return { getPokemonList };
 }
