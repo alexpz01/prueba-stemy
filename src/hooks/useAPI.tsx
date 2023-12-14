@@ -27,6 +27,13 @@ export default function useAPI() {
   const getPokemonsInfo = async (pokemonAPIResult: any): Promise<Pokemon[]> => {
     const pokemonsData = pokemonAPIResult.results;
 
+    // Your version was not very good performance wise. You were awaiting for each pokemon to be fetched before fetching the next one.
+    // If the pokemon request takes 1 second, and you have 20 pokemons, you will be waiting 20 seconds util you have all the pokemons loaded.
+
+    // With Promise.all, you can fetch all the pokemons at the same time, and then wait for all of them to be fetched. The total time
+    // will be the time it takes to fetch the slowest pokemon, around 1 second in this case.
+
+    // To check this, use the waterfall in the network inspector tab of chrome dev tools.
     const pokemonList = await Promise.all(
       pokemonsData.map(async (pokemonData) => {
         // Calling an empty constructor and then having to set the values is not a good practice.
